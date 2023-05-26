@@ -13,12 +13,14 @@ namespace BulkyBookWeb.Controllers
             _db = context;
         }
 
+        //Index View
         public IActionResult Index()
         {
             IEnumerable<Category> objCategoryList = _db.Categories;
             return View(objCategoryList);
         }
 
+        //Create View
         public IActionResult Create()
         { 
             return View();
@@ -41,5 +43,38 @@ namespace BulkyBookWeb.Controllers
             }
             return View(obj);
         }
-    }
+
+		//Edit View
+		public IActionResult Edit(int id)
+		{
+            if(id == null || id == 0)
+            {
+                return NotFound();
+            }
+            var categoryFromDb = _db.Categories.Find(id);
+            if(categoryFromDb == null)
+            {
+                return NotFound();
+            }
+			return View(categoryFromDb);
+		}
+
+		//Post
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public IActionResult Edit(Category obj)
+		{
+			if (obj.Name == obj.DisplayOrder.ToString())
+			{
+				ModelState.AddModelError("name", "The Name cannot match the Display Order.");
+			}
+			if (ModelState.IsValid)
+			{
+				_db.Categories.Update(obj);
+				_db.SaveChanges();
+				return RedirectToAction("Index");
+			}
+			return View(obj);
+		}
+	}
 }
